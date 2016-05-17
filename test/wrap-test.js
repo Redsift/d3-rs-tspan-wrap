@@ -43,3 +43,32 @@ tape("text() generates 2 tspan", function(t) {
         t.equal(parseInt(node.attr('dy')), i*lh);
     });
 });   
+
+
+tape("text() generates 2 tspan with data", function(t) {
+    t.plan(5);
+    
+    var host = svg.html();
+    var el = d3.select('#test').call(host).select(host.self()).select(host.child());
+    var textElm = el.append('text').data([ lore ]);
+    
+    var lh = 20;
+    
+    var wrap = text.text().lineHeight(lh).spacing(3).width(1000);
+    textElm.call(wrap);
+    
+    var result = textElm.text();
+    
+    t.equal(textElm.selectAll('tspan').size(), 2);    
+
+    textElm.selectAll('tspan').each(function (d, i) {
+        var node = d3.select(this);
+        t.equal(parseInt(node.attr('dy')), i*lh);
+    });
+    
+    // should be invariant
+    textElm.call(wrap);
+    
+    t.equal(textElm.selectAll('tspan').size(), 2);    
+    t.equal(textElm.text(), result);    
+}); 

@@ -18,7 +18,7 @@ export default function text(id) {
     selection.each(function(data) {
       
       var text = select(this), 
-          toWrap = text.text(), 
+          toWrap = data, 
           x = xPos, 
           y = yPos,
           w = width, 
@@ -33,8 +33,8 @@ export default function text(id) {
       w = (tw === null) ? w : parseInt(tw);
       h = (th === null) ? h : parseInt(th);      
       
-      if (toWrap === null || toWrap.length === 0) {
-        toWrap = data ? data : '';
+      if (toWrap == null) {
+        toWrap = text.text();
       }
       
       var words = toWrap.split(split).reverse(),
