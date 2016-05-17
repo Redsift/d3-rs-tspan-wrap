@@ -4,45 +4,47 @@ export default function text(id) {
   var classed = 'tspan-wrap', 
       split = /\s+/, 
       join = ' ', 
+      xPos = 0,
+      yPos = 0,
       width = 0,
+      height = 0,
       spacing = 0,
       lineHeight = 0;
 
   function _impl(context) {
     var selection = context.selection ? context.selection() : context;
-
+    var tdy = 0;
+    
     selection.each(function(data) {
-      var text = d3.select(this),
-            words = text.text().split(split).reverse(),
+      
+      var text = select(this), 
+          toWrap = text.text(), 
+          x = xPos, 
+          y = yPos,
+          w = width, 
+          h = height;
+      var tx = text.attr('x');
+      var ty = text.attr('y');
+      var tw = text.attr('width');
+      var th = text.attr('height');
+      
+      x = (tx === null) ? x : parseInt(tx);
+      y = (ty === null) ? y : parseInt(ty);
+      w = (tw === null) ? w : parseInt(tw);
+      h = (th === null) ? h : parseInt(th);      
+      
+      if (toWrap === null || toWrap.length === 0) {
+        toWrap = data ? data : '';
+      }
+      
+      var words = toWrap.split(split).reverse(),
             word,
             line = [],
             spans = [],
             dy = 0,
-            x = text.attr('x'),
-            y = text.attr('y'),
-            w = text.attr('width'),
-            h = text.attr('height'),     
             tspan = text.text(null).append('tspan').attr('class', classed);
-        
-        if (x == null) {
-          x = 0;
-        }
-        
-        if (y == null) {
-          y = 0;
-        }
-        
-        if (w != null) {
-            w = parseInt(w);
-        } else {
-            w = width;
-        }
 
-        if (h != null) {
-            h = parseInt(h);
-        }
-
-        while (word = words.pop()) {
+        while ((word = words.pop())) {
             line.push(word);
             var option = line.join(join);
             tspan.text(option);
@@ -56,7 +58,7 @@ export default function text(id) {
               len = tspan.node().getComputedTextLength(); 
             }
             
-            if (len > w) {
+            if (w > 0 && len > w) {
                 var popped = line.pop();
                 if (line.length === 0) {
                     line = [ popped ];
@@ -68,12 +70,12 @@ export default function text(id) {
                 // update the dy later to keep the BBox predictable
                 spans.push([tspan, dy]);
 
-                var height = lineHeight;
+                var lh = lineHeight;
                 if (lineHeight === 0) {
-                  height = tspan.node().getBBox().height;
+                  lh = tspan.node().getBBox().height;
                 }
                 
-                dy = dy + height;
+                dy = dy + lh;
                 
                 var txt = line.join(join);
                 if (word !== null) {
@@ -82,7 +84,7 @@ export default function text(id) {
                     line = [];
                 }
                 
-                if (h != null && dy > h) {
+                if (h > 0 && dy > h) {
                     tspan.text(txt + '…');
                     tspan = null;
                     line = [];
@@ -97,12 +99,22 @@ export default function text(id) {
             tspan.text(line.join(join));
             tspan.attr('x', x).attr('y', y);
             spans.push([tspan, dy]);
+            
+            lh = lineHeight;
+            if (lineHeight === 0) {
+              lh = tspan.node().getBBox().height;
+            }
+            
+            dy = dy + lh;
         }
 
-        // this workaround is due to odd behaviour with getBBox and the height
-        spans.forEach(function (d) {
-            d[0].attr('dy', d[1]);
-        });
+        if (spans.length > 0) {
+          // this workaround is due to odd behaviour with getBBox and the height
+          spans.forEach(function (d) {
+              d[0].attr('dy', d[1] + tdy);
+          });
+          tdy = tdy + dy;
+        }
     });
   }
   
@@ -114,6 +126,18 @@ export default function text(id) {
     
   _impl.classed = function(value) {
     return arguments.length ? (classed = value, _impl) : classed;
+  };
+
+  _impl.x = function(value) {
+    return arguments.length ? (xPos = value, _impl) : xPos;
+  };
+  
+  _impl.y = function(value) {
+    return arguments.length ? (yPos = value, _impl) : yPos;
+  };
+
+  _impl.height = function(value) {
+    return arguments.length ? (height = value, _impl) : height;
   };
 
   _impl.width = function(value) {
