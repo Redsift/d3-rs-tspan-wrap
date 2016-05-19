@@ -1,6 +1,6 @@
 {
   "name": "@redsift/d3-rs-tspan-wrap",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Wraps a text element by creating tspans using D3v4.",
   "keywords": [
     "text",
