@@ -25,7 +25,7 @@
     <div id="elm-2"></div>
     <div id="elm-3"></div>
         
-    <script src="https://d3js.org/d3.v4.0.0-alpha.35.min.js"></script>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
     <script src="//static.redsift.io/reusable/d3-rs-svg/latest/d3-rs-svg.umd-es2015.min.js"></script>
     <script src="/d3-rs-tspan-wrap.umd-es2015.min.js"></script>
     <script>
@@ -60,9 +60,12 @@
                               'But the secret is to give them only what they need, not what they want.' ]);
                               
       var textElm = textElm.enter().append('text').merge(textElm);
-      textElm.text((d) => d);
       
-      var text = d3_rs_tspan_wrap.text().width(svg.childWidth()).height(30);
+      var h = 30;
+      
+      textElm.attr('y', (d,i) => i*h*2);
+      
+      var text = d3_rs_tspan_wrap.text().width(svg.childWidth()).height(h);
       textElm.call(text);
     }
     
@@ -79,7 +82,10 @@
                               'But the secret is to give them only what they need, not what they want.' ]);
                               
       var textElm = textElm.enter().append('text').merge(textElm);
+      var h = 30;
       
+      textElm.attr('y', (d,i) => i*h*2);
+            
       var text = d3_rs_tspan_wrap.text().width(svg.childWidth());
       textElm.call(text);
       textElm.call(text);    
