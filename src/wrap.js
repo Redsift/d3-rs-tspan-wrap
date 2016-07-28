@@ -1,7 +1,7 @@
 import { select } from 'd3-selection';
 
-export default function text(id) {
-  var classed = 'tspan-wrap', 
+export default function wrap(id) {
+  let classed = 'tspan-wrap', 
       split = /\s+/, 
       join = ' ', 
       xPos = 0,
@@ -9,24 +9,24 @@ export default function text(id) {
       width = 0,
       height = 0,
       spacing = 0,
-      lineHeight = 0;
+      lineHeight = 0,
+      text = d => d;
 
   function _impl(context) {
-    var selection = context.selection ? context.selection() : context;
-    var tdy = 0;
+    let selection = context.selection ? context.selection() : context;
     
     selection.each(function(data) {
       
-      var text = select(this), 
-          toWrap = data, 
+      let node = select(this), 
+          toWrap = text(data), 
           x = xPos, 
           y = yPos,
           w = width, 
           h = height;
-      var tx = text.attr('x');
-      var ty = text.attr('y');
-      var tw = text.attr('width');
-      var th = text.attr('height');
+      let tx = node.attr('x');
+      let ty = node.attr('y');
+      let tw = node.attr('width');
+      let th = node.attr('height');
       
       x = (tx === null) ? x : parseInt(tx);
       y = (ty === null) ? y : parseInt(ty);
@@ -34,22 +34,22 @@ export default function text(id) {
       h = (th === null) ? h : parseInt(th);      
       
       if (toWrap == null) {
-        toWrap = text.text();
+        toWrap = node.text();
       }
       
-      var words = toWrap.split(split).reverse(),
+      let words = toWrap.split(split).reverse(),
             word,
             line = [],
             spans = [],
             dy = 0,
-            tspan = text.text(null).append('tspan').attr('class', classed);
+            tspan = node.text(null).append('tspan').attr('class', classed);
 
         while ((word = words.pop())) {
             line.push(word);
-            var option = line.join(join);
+            let option = line.join(join);
             tspan.text(option);
             
-            var len = 0;
+            let len = 0;
             
             if (spacing !== 0) {
               // if tspan.node().getComputedTextLength() does not work, we need a hardcode
@@ -59,7 +59,7 @@ export default function text(id) {
             }
             
             if (w > 0 && len > w) {
-                var popped = line.pop();
+                let popped = line.pop();
                 if (line.length === 0) {
                     line = [ popped ];
                     word = null;
@@ -70,14 +70,14 @@ export default function text(id) {
                 // update the dy later to keep the BBox predictable
                 spans.push([tspan, dy]);
 
-                var lh = lineHeight;
+                let lh = lineHeight;
                 if (lineHeight === 0) {
                   lh = tspan.node().getBBox().height;
                 }
                 
                 dy = dy + lh;
                 
-                var txt = line.join(join);
+                let txt = line.join(join);
                 if (word !== null) {
                     line = [ word ];
                 } else {
@@ -91,7 +91,7 @@ export default function text(id) {
                     break;
                 } else {
                     tspan.text(txt);
-                    tspan = text.append('tspan').text(null).attr('class', classed);
+                    tspan = node.append('tspan').text(null).attr('class', classed);
                 }
             }
         }
@@ -100,7 +100,7 @@ export default function text(id) {
             tspan.attr('x', x).attr('y', y);
             spans.push([tspan, dy]);
             
-            lh = lineHeight;
+            let lh = lineHeight;
             if (lineHeight === 0) {
               lh = tspan.node().getBBox().height;
             }
@@ -109,6 +109,7 @@ export default function text(id) {
         }
 
         if (spans.length > 0) {
+          let tdy = 0;
           // this workaround is due to odd behaviour with getBBox and the height
           spans.forEach(function (d) {
               d[0].attr('dy', d[1] + tdy);
@@ -155,7 +156,11 @@ export default function text(id) {
   _impl.spacing = function(value) {
     return arguments.length ? (spacing = value, _impl) : spacing;
   };   
-  
+
+  _impl.text = function(value) {
+    return arguments.length ? (text = value, _impl) : text;
+  };  
+    
   _impl.lineHeight = function(value) {
     return arguments.length ? (lineHeight = value, _impl) : lineHeight;
   };  
